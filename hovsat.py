@@ -2,6 +2,7 @@ from __future__ import division
 
 import sys
 from glob import glob
+import argparse
 
 import numpy as np
 import matplotlib as mpl
@@ -272,9 +273,19 @@ def radagast_test():
 # the image.
 
 if __name__ == '__main__':
-    transect_coords = (2.16, 13.5, -1.7, 19.6)
-    T = main(transect_coords, path='./images/')
+    F20_coords = [2.16, 13.5, -1.7, 19.6]
+
+    parser = argparse.ArgumentParser(description="Produce a hovmoller from \
+                                 a transect in some satellite images")
+    parser.add_argument('-c', '--coordinates',
+                        help='Coordinates x0 y0 x1 y1 of the \
+                              transect start and end',
+                        default=F20_coords, required=False, type=float, nargs=4)
+    args = parser.parse_args()
+    transect_coords = args.coordinates
+    T = main(F20_coords, path='./images/')
     fig = hovmoller(T)
+
 # bonus: intelligently interpolate the hovmoller such that
 # coherent wave structures are picked out. requires selection of
 # appropriate interpolation lines in image to create an
