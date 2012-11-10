@@ -21,37 +21,45 @@ def file_list(path='./', ext=''):
     return files
 
 
-def read_image(im_name):
-    im = Image.open(im_name)
-    return np.array(im)
+def pixels_from_latlon(X, Y, image, basemap, inverse=False):
+    """Calculate equivalent pixels from given latitude and
+    longitude for a given image representing a given basemap
+    instance.
 
+    Arguments:
+        X - Longitude
+        Y - Latitude
+        image - A PIL image instance OR an image filename
+        basemap - a Basemap instance representing the same region
+                  as the image
+        inverse - setting to True will compute the equivalent
+                  lon / lat from given pixel coordinates.
 
-def gen_coords(shape, box):
-    """Creates an array of coordinates that matches the dimension
-    of the supplied image.
-
-    Inputs: shape - tuple. the result of im.shape where im is the image array
-            box - tuple. a bounding box in latitude / longitude.
-                (left, upper, right, lower)
-
-    Returns: an array of each of the lat / lon coords of the corresponding
-            image pixels
+    Returns:
+        (px, py) - the image coordinates (i.e. measured from the upper-
+                   left) that match the given latitude and longitude.
     """
-    nx = shape[0]
-    ny = shape[1]
-    left, upper, right, lower = box
-    x_coords = np.linspace(left, right, nx)
-    y_coords = np.linspace(upper, lower, ny)
-    X, Y = np.meshgrid(x_coords, y_coords)
-    # X is array of longitudes
-    # Y is array of latitudes
-    return X, Y
+    if type(image) is str:
+        im = Image.open(image)
+    elif hasattr(image, 'size'):
+        im = image
+    else:
+        exit("The image is not a string or an image instance. Try again")
 
+    m = basemap
+    if inverse:
+        # calculate lon / lat from given pixel coords
+        x = X / im.size[0] * (m.xmax - m.xmin) + m.xmin
+        y = (im.size[1] - Y) / im.size[1] * (m.ymax - m.ymin) + m.ymin
+        lon, lat = m(x, y, inverse=True)
+        return round(lon, 4), round(lat, 4)
 
-def latlon(im_coord):
-    """Calculate the latitude / longitude of a given image coordinate.
-    """
-    pass
+    elif not inverse:
+        x, y = m(X, Y)
+        px = int(x / (m.xmax - m.xmin) * im.size[0])
+        # y has to be changed to get image coords
+        py = int(im.size[1] - y / (m.ymax - m.xmin) * im.size[1])
+        return px, py
 
 
 def extract_transect(im, coords, res=None):
@@ -262,46 +270,6 @@ def radagast_test():
 
 # however, we still don't know how this translates into pixels in
 # the image.
-def pixels_from_latlon(X, Y, image, basemap, inverse=False):
-    """Calculate equivalent pixels from given latitude and
-    longitude for a given image representing a given basemap
-    instance.
-
-    Arguments:
-        X - Longitude
-        Y - Latitude
-        image - A PIL image instance OR an image filename
-        basemap - a Basemap instance representing the same region
-                  as the image
-        inverse - setting to True will compute the equivalent
-                  lon / lat from given pixel coordinates.
-
-    Returns:
-        (px, py) - the image coordinates (i.e. measured from the upper-
-                   left) that match the given latitude and longitude.
-    """
-    if type(image) is str:
-        im = Image.open(image)
-    elif hasattr(image, 'size'):
-        im = image
-    else:
-        exit("The image is not a string or an image instance. Try again")
-
-    m = basemap
-    if inverse:
-        # calculate lon / lat from given pixel coords
-        x = X / im.size[0] * (m.xmax - m.xmin) + m.xmin
-        y = (im.size[1] - Y) / im.size[1] * (m.ymax - m.ymin) + m.ymin
-        lon, lat = m(x, y, inverse=True)
-        return round(lon, 4), round(lat, 4)
-
-    elif not inverse:
-        x, y = m(X, Y)
-        px = int(x / (m.xmax - m.xmin) * im.size[0])
-        # y has to be changed to get image coords
-        py = int(im.size[1] - y / (m.ymax - m.xmin) * im.size[1])
-        return px, py
-
 
 if __name__ == '__main__':
     transect_coords = (2.16, 13.5, -1.7, 19.6)
