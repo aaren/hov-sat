@@ -1,17 +1,19 @@
 from __future__ import division
 
+import os
 import sys
 from glob import glob
 import argparse
 
 import numpy as np
-import matplotlib as mpl
-mpl.use('Agg')
+if not 'DISPLAY' in os.environ:
+    import matplotlib as mpl
+    mpl.use('Agg')
 import matplotlib.pyplot as plt
+from mpl_toolkits.basemap import Basemap
+
 import scipy.ndimage as ndimage
 import Image
-
-from mpl_toolkits.basemap import Basemap
 
 
 def file_list(path='./', ext=''):
@@ -239,7 +241,8 @@ def corner_coords(upper=(0, 30), right=(25, 0),
     the geographical coordinates of the corners of the image given
     a coordinate on each of the edges.
 
-    Motivated by Radagast seviri images.
+    Motivated by Radagast seviri images, which give the values of
+    the defaults above.
 
     RADAGAST
     More tricky to calculate as the region is bounded by points
