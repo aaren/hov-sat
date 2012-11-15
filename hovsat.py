@@ -234,8 +234,14 @@ def map_test():
 
 
 def corner_coords(upper=(0, 30), right=(25, 0),
-                  lower=(0, -5), left=(-25, 0)):
-    """ RADAGAST
+                  lower=(0, -5), left=(-25, 0), lon_0=0):
+    """For a rectangular geostationary satellite image, compute
+    the geographical coordinates of the corners of the image given
+    a coordinate on each of the edges.
+
+    Motivated by Radagast seviri images.
+
+    RADAGAST
     More tricky to calculate as the region is bounded by points
     on the equator and the prime meridian, which are lat (-5,30),
     lon(-25,25). This method will work for any image for which we
@@ -247,7 +253,7 @@ def corner_coords(upper=(0, 30), right=(25, 0),
     contain all of the target area and then working out the
     corners within this.
     """
-    m1 = Basemap(projection='geos', lon_0=0, resolution=None)
+    m1 = Basemap(projection='geos', lon_0=lon_0, resolution=None)
     # extract corner coords in lon / lat
     upper_right = m1(m1(*right)[0], m1(*upper)[1], inverse=True)
     lower_left = m1(m1(*left)[0], m1(*lower)[1], inverse=True)
@@ -265,13 +271,6 @@ def radagast_test():
     plt.show()
 
 
-# map radagast allows us to fit an image to a map projection, with
-# which we can interact using either lat / lon or map projection
-# coordinates.
-
-# however, we still don't know how this translates into pixels in
-# the image.
-
 if __name__ == '__main__':
     F20_coords = [2.16, 13.5, -1.7, 19.6]
 
@@ -280,10 +279,13 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--coordinates',
                         help='Coordinates x0 y0 x1 y1 of the \
                               transect start and end',
-                        default=F20_coords, required=False, type=float, nargs=4)
+                        default=F20_coords, required=False,
+                        type=float, nargs=4)
     args = parser.parse_args()
+
     transect_coords = args.coordinates
-    T = main(F20_coords, path='./images/')
+
+    T = main(F20_coords, path='./images/', view='radagast')
     fig = hovmoller(T)
 
 # bonus: intelligently interpolate the hovmoller such that
