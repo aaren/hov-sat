@@ -198,7 +198,7 @@ def hovmoller(transects):
     return fig
 
 
-def main(transect_coords=(0, 5, 10, 10), path='./images/', view='radagast'):
+def main(transect_coords=(2.16, 13.5, -1.7, 19.7), path='./images/', view='radagast'):
     if view == 'radagast':
         lower_left, upper_right = corner_coords()
     elif view == 'fennec':
